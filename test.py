@@ -7,6 +7,7 @@ from functions import *
 import xml.etree.ElementTree as ET
 
 #pyqt 5.14.1
+#dsdasdasdasdas
 QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
 
 class Map(QGraphicsView):
