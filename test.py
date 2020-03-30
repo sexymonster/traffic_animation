@@ -7,7 +7,6 @@ from functions import *
 import xml.etree.ElementTree as ET
 
 #pyqt 5.14.1
-#dsdasdasdasdas
 QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
 
 class Map(QGraphicsView):
@@ -33,21 +32,58 @@ class Map(QGraphicsView):
         self.brush_source = QBrush(QColor(230,230,230))
         self.brush_sink = QBrush(QColor(30, 30, 30))
 
-    def color_change(self,cell):
-        high = 255
-        low = 0
-        r = qrand() % ((high + 1) - low) + low
-        g = qrand() % ((high + 1) - low) + low
-        b = qrand() % ((high + 1) - low) + low
-        cell.rect.setBrush(QColor(r,g,b))
+        self.count = 0
+        self.timer = None
+        self.t = None
+        self.before = []
+
+    def anime_1(self,acts,keys):
+        # print(keys[self.count])
+        self.t.setHtml(keys[self.count])
+        # print(len(self.before))
+        for act in self.before:
+            act.setBrush(Qt.lightGray)
+
+        self.scene.update()
+        self.before = []
+
+        # print(len(self.before))
+        for act in acts:
+
+            if act[1] == '-nan(ind)':
+                continue
+            elif act[1] == 'inf':
+                act[0].setBrush(Qt.red)
+                self.before.append(act[0])
+            else:
+                act[0].setBrush(Qt.yellow)
+                self.before.append(act[0])
+
+            self.scene.update()
+
+        self.count += 1
+        if self.count == len(keys):
+            self.timer.stop()
+
+    def meso_animation(self, timeline):
+
+        keys = list(timeline.keys())
+        first_time = keys[self.count]
+
+        self.t = QGraphicsTextItem(first_time)
+        self.t.setPos(-200,-200)
+        font = self.t.font()
+        font.setPointSize(20)
+        font.setWeight(300)
+        self.t.setFont(font)
+        self.t.setTextWidth(400)
+        self.scene.addItem(self.t)
         self.scene.update()
 
-    def animation(self, Network):
-        timer = QTimer(self)
-        cell = Network.Links['Link0'].lanes['Lane0']['Cell0']
-        timer.timeout.connect(lambda:self.color_change(cell))
-        timer.setInterval(1)
-        timer.start()
+        self.timer = QTimer(self)
+        self.timer.setInterval(10)
+        self.timer.timeout.connect(lambda :self.anime_1(timeline[keys[self.count]], keys))
+        self.timer.start()
 
     def draw_network(self, Network):
         # drawing starts with non-terminal node object.
@@ -72,7 +108,7 @@ class Map(QGraphicsView):
             data = Net.Links[station.link_ref].station
             start_x = data[0]
             start_y = data[1]
-            print(station.id,start_x,start_y)
+            # print(station.id,start_x,start_y)
             if data[2] == 0:
                 if data[3] == 'in':
                     A = QPointF(start_x, start_y+station.pos)
@@ -299,7 +335,7 @@ class Map(QGraphicsView):
         x2 = B.x()
         y2 = B.y()
 
-        print('draw',port.link.id , x1,y1,x2,y2)
+        # print('draw',port.link.id , x1,y1,x2,y2)
 
         # horizontal lanes
         if port.direction == 90:
@@ -474,55 +510,65 @@ class MyWidget(QWidget):
         super().__init__(parent)
         self.layout = QVBoxLayout(self)
         self.view = Map(self)
-
         self.Net = Network()
+        self.timeline = dict()
 
         # for xml files open
         self.button1 = QPushButton("Button 1")
         self.button1.clicked.connect(lambda:self.file_open())
+
         self.button2 = QPushButton("Button 2")
-        self.button2.clicked.connect(lambda:self.view.animation(self.Net))
+        self.button2.clicked.connect(lambda:self.meso_file_open())
+
+        self.gbf = QGroupBox('anime test')
+        self.grid = QGridLayout()
+        self.gbf.setLayout(self.grid)
+        self.text_line = QLineEdit("", self)
+        self.grid.addWidget(self.text_line, 0, 0)
+        self.button3 = QPushButton("Animation start")
+        self.button3.clicked.connect(lambda: self.view.meso_animation(self.timeline))
+        self.grid.addWidget(self.button3, 0, 1)
 
         # just layout for color change test.
-        self.gb = QGroupBox('color test')
-        self.grid = QGridLayout()
-        self.gb.setLayout(self.grid)
+        # self.gb = QGroupBox('color test')
+        # self.grid = QGridLayout()
+        # self.gb.setLayout(self.grid)
+        #
+        # self.grid.addWidget(QLabel('Link'),0,0)
+        # self.combo = QComboBox()
+        # self.grid.addWidget(self.combo, 0, 1)
+        # for i in range(42):
+        #     self.combo.addItem(str(i))
+        #
+        # self.grid.addWidget(QLabel('Lane'),1,0)
+        # self.combo2 = QComboBox()
+        # self.grid.addWidget(self.combo2, 1, 1)
+        # for i in range(0,3):
+        #     self.combo2.addItem(str(i))
+        #
+        # self.grid.addWidget(QLabel('Cell'),1,2)
+        # self.combo3 = QComboBox()
+        # self.grid.addWidget(self.combo3, 1, 3)
+        # for i in range(0,2):
+        #     self.combo3.addItem(str(i))
+        #
+        # self.grid.addWidget(QLabel('color'), 2, 0)
+        # self.combo4 = QComboBox()
+        # self.grid.addWidget(self.combo4, 2, 1)
+        # self.combo4.addItem('red')
+        # self.combo4.addItem('green')
+        # self.combo4.addItem('yellow')
+        # self.combo4.addItem('None')
 
-        self.grid.addWidget(QLabel('Link'),0,0)
-        self.combo = QComboBox()
-        self.grid.addWidget(self.combo, 0, 1)
-        for i in range(42):
-            self.combo.addItem(str(i))
-
-        self.grid.addWidget(QLabel('Lane'),1,0)
-        self.combo2 = QComboBox()
-        self.grid.addWidget(self.combo2, 1, 1)
-        for i in range(0,3):
-            self.combo2.addItem(str(i))
-
-        self.grid.addWidget(QLabel('Cell'),1,2)
-        self.combo3 = QComboBox()
-        self.grid.addWidget(self.combo3, 1, 3)
-        for i in range(0,2):
-            self.combo3.addItem(str(i))
-
-        self.grid.addWidget(QLabel('color'), 2, 0)
-        self.combo4 = QComboBox()
-        self.grid.addWidget(self.combo4, 2, 1)
-        self.combo4.addItem('red')
-        self.combo4.addItem('green')
-        self.combo4.addItem('yellow')
-        self.combo4.addItem('None')
-
-        self.ct_btn = QPushButton('change')
-        self.grid.addWidget(self.ct_btn, 3, 1)
-        self.ct_btn.clicked.connect(lambda:self.color_test(self.combo.currentIndex(),self.combo2.currentIndex(),self.combo3.currentIndex(),self.combo4.currentIndex()))
-
+        # self.ct_btn = QPushButton('change')
+        # self.grid.addWidget(self.ct_btn, 3, 1)
+        # self.ct_btn.clicked.connect(lambda:self.color_test(self.combo.currentIndex(),self.combo2.currentIndex(),self.combo3.currentIndex(),self.combo4.currentIndex()))
 
         self.layout.addWidget(self.view)
         self.layout.addWidget(self.button1)
         self.layout.addWidget(self.button2)
-        self.layout.addWidget(self.gb)
+        self.layout.addWidget(self.gbf)
+        # self.layout.addWidget(self.gb)
         self.setLayout(self.layout)
 
     def color_test(self,a,b,c,d):
@@ -575,6 +621,28 @@ class MyWidget(QWidget):
         set_cell_data(self.Net, c_data)
 
         self.view.draw_network(self.Net)
+
+
+    def meso_file_open(self):
+        #open meso file
+        ms_file = QFileDialog.getOpenFileName()
+        if ms_file[0] == "":
+            return
+
+        elif ms_file[0].split(".")[-1] != "xml":
+            err = QMessageBox()
+            err.about(self, "Load Error", "열 수 없는 파일 포맷입니다.(only .xmlR file)")
+            return
+
+        tree = ET.parse(ms_file[0])
+        ms_data = tree.getroot()
+        set_meso_data(ms_data,self.timeline,self.Net)
+
+
+
+
+
+
 
 
 

@@ -94,6 +94,23 @@ def set_cell_data(Net,C_data):
 
             Net.Links[link.attrib['id']].lanes[lane.attrib['id']] = a_lane
 
+def set_meso_data(messo,timeline,Network):
+
+    for cell in messo.iter('Cell'):
+        ms_data = cell.attrib
+        if not ms_data['timestep'] in timeline.keys():
+            # print('o')
+            timeline[ms_data['timestep']] = []
+
+        rect = Network.Links[ms_data['link_id']].lanes[ms_data['lane_id']][ms_data['id']].rect
+        data = [rect, ms_data['spd'], ms_data['icf']]
+        timeline[ms_data['timestep']].append(data)
+        # print(rect)
+        # timeline[ms_data['timestep']].append([ms_data['spd']])
+        # print(ms_data)
+
+    # print(list(timeline.values()))
+
 
 def set_vehicles(Vehicles):
     pass
