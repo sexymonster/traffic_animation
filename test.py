@@ -6,7 +6,7 @@ from road_object import *
 from functions import *
 import xml.etree.ElementTree as ET
 
-
+#pyqt 5.14.1
 QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
 
 class Map(QGraphicsView):
@@ -31,6 +31,22 @@ class Map(QGraphicsView):
         # terminal block
         self.brush_source = QBrush(QColor(230,230,230))
         self.brush_sink = QBrush(QColor(30, 30, 30))
+
+    def color_change(self,cell):
+        high = 255
+        low = 0
+        r = qrand() % ((high + 1) - low) + low
+        g = qrand() % ((high + 1) - low) + low
+        b = qrand() % ((high + 1) - low) + low
+        cell.rect.setBrush(QColor(r,g,b))
+        self.scene.update()
+
+    def animation(self, Network):
+        timer = QTimer(self)
+        cell = Network.Links['Link0'].lanes['Lane0']['Cell0']
+        timer.timeout.connect(lambda:self.color_change(cell))
+        timer.setInterval(1)
+        timer.start()
 
     def draw_network(self, Network):
         # drawing starts with non-terminal node object.
@@ -450,9 +466,6 @@ class Map(QGraphicsView):
 
 
 
-
-
-
 class MyWidget(QWidget):
 
     def __init__(self, parent):
@@ -467,7 +480,7 @@ class MyWidget(QWidget):
         self.button1 = QPushButton("Button 1")
         self.button1.clicked.connect(lambda:self.file_open())
         self.button2 = QPushButton("Button 2")
-        self.button2.clicked.connect(lambda:self.file_open())
+        self.button2.clicked.connect(lambda:self.view.animation(self.Net))
 
         # just layout for color change test.
         self.gb = QGroupBox('color test')
