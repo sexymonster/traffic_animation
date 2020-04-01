@@ -53,10 +53,17 @@ class Map(QGraphicsView):
             if act[1] == '-nan(ind)':
                 continue
             elif act[1] == 'inf':
-                act[0].setBrush(Qt.red)
+                act[0].setBrush(Qt.green)
                 self.before.append(act[0])
             else:
-                act[0].setBrush(Qt.yellow)
+
+                v = float(act[1])
+                if v < 30:
+                    act[0].setBrush(Qt.red)
+                elif v < 60:
+                    act[0].setBrush(Qt.yellow)
+                else:
+                    act[0].setBrush(Qt.darkGreen)
                 self.before.append(act[0])
 
             self.scene.update()
@@ -81,7 +88,7 @@ class Map(QGraphicsView):
         self.scene.update()
 
         self.timer = QTimer(self)
-        self.timer.setInterval(10)
+        self.timer.setInterval(100)
         self.timer.timeout.connect(lambda :self.anime_1(timeline[keys[self.count]], keys))
         self.timer.start()
 
@@ -306,6 +313,7 @@ class Map(QGraphicsView):
                 rect = QRectF(A, B)
                 item = self.scene.addRect(rect, self.dot_line, self.brush)
                 item.setZValue(25)
+                item.setOpacity(0.5)
                 item.setToolTip(str(Node.id))
 
             elif Node.type == "normal":
@@ -361,6 +369,7 @@ class Map(QGraphicsView):
 
                     lane_item = self.scene.addRect(lane, self.pen, self.brush)
                     lane_item.setZValue(0)
+                    lane_item.setOpacity(0.5)
                     lane_item.setToolTip(port.link.id+','+ 'Lane' + str(port.link.num_lane-i-1) +  ','+ cd.id)
                     cd.rect = lane_item
 
@@ -390,6 +399,7 @@ class Map(QGraphicsView):
 
                     lane_item = self.scene.addRect(lane, self.pen, self.brush)
                     lane_item.setZValue(0)
+                    lane_item.setOpacity(0.5)
                     lane_item.setToolTip(port.link.id+','+'Lane' + str(port.link.num_lane-i-1) +','+ cd.id )
                     cd.rect = lane_item
 
@@ -417,6 +427,7 @@ class Map(QGraphicsView):
 
                     lane_item = self.scene.addRect(lane, self.pen, self.brush)
                     lane_item.setZValue(0)
+                    lane_item.setOpacity(0.5)
                     lane_item.setToolTip(port.link.id + ',' + 'Lane' + str(port.link.num_lane-i-1) + ','  + cd.id )
                     cd.rect = lane_item
 
@@ -446,6 +457,7 @@ class Map(QGraphicsView):
 
                         lane_item = self.scene.addRect(lane, self.pen, self.brush)
                         lane_item.setZValue(0)
+                        lane_item.setOpacity(0.5)
                         lane_item.setToolTip(port.link.id + ',' + 'Lane' + str(port.link.num_lane-i-1) + ',' + cd.id)
                         cd.rect = lane_item
 
@@ -597,7 +609,7 @@ class MyWidget(QWidget):
 
         elif ni_file[0].split(".")[-1] != "xml":
             err = QMessageBox()
-            err.about(self, "Load Error", "열 수 없는 파일 포맷입니다.(only .xmlR file)")
+            err.about(self, "Load Error", "(only .xmlR file)")
             return
 
         tree = ET.parse(ni_file[0])
@@ -613,7 +625,7 @@ class MyWidget(QWidget):
             return
         elif no_file[0].split(".")[-1] != "xml":
             err = QMessageBox()
-            err.about(self, "Load Error", "열 수 없는 파일 포맷입니다.(only .xmlR file)")
+            err.about(self, "Load Error", "(only .xmlR file)")
             return
 
         tree = ET.parse(no_file[0])
@@ -631,19 +643,12 @@ class MyWidget(QWidget):
 
         elif ms_file[0].split(".")[-1] != "xml":
             err = QMessageBox()
-            err.about(self, "Load Error", "열 수 없는 파일 포맷입니다.(only .xmlR file)")
+            err.about(self, "Load Error", "(only .xmlR file)")
             return
 
         tree = ET.parse(ms_file[0])
         ms_data = tree.getroot()
         set_meso_data(ms_data,self.timeline,self.Net)
-
-
-
-
-
-
-
 
 
 class Form(QMainWindow):
